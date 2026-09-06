@@ -1,3 +1,5 @@
+daten = []
+
 class Gegner:
     def __init__ (self, name, hp, attacken, mana, max_hp):
         self.name = name
@@ -40,9 +42,11 @@ def gewinner(option1, option2):
     else:
         print(f"{option2.name} hat gewonnen")
 
+start_mana = 35
+
 spieler = Gegner("Spieler", 100, {"1": {"name": "Standardangriff", "schaden": 120, "gov": 10}, #gov = Gewinn oder Verlust
                                 "2":{"name": "Starker Angriff", "schaden": 35, "gov": -20},
-                                "3":{"name": "Heilung", "heilung": 30, "gov": -15}}, 35, 100)
+                                "3":{"name": "Heilung", "heilung": 30, "gov": -15}}, start_mana, 100)
 
 goblin = Gegner("Goblin", 70, {"1":{"name": "Standardangriff", "schaden": 30, "gov": 0}}, 9999, 70)
 ritter = Gegner("Ritter", 120, {"1":{"name": "Standardangriff", "schaden": 35, "gov": 0}}, 9999, 120)
@@ -50,8 +54,33 @@ hexe = Gegner("Hexe", 90, {"1":{"name": "Standardangriff", "schaden": 20, "gov":
 
 gegner = {"1": goblin, "2": ritter, "3": hexe}
 
+def speichern():
+    with open("speicher.txt", "w") as datei:
+        datei.write(f"{spieler.hp}\n")
+        datei.write(f"{spieler.mana}\n")
+        for name in gegner.values():
+            datei.write(f"{name.hp}\n")
+
+def laden():
+    with open("speicher.txt", "r") as datei:
+        inhalt = datei.read()
+        inhalt = inhalt.strip()        
+        stats = inhalt.split("\n")
+        #alle Zahlen in int umwandeln
+    stats = [int(x) for x in stats]
+    spieler.hp = stats[0]
+    spieler.mana = stats[1]
+    for zahl, name in gegner.items():
+        name.hp = stats[int(zahl) + 1] 
+
+try:
+    laden()
+except:
+    pass
 
 while spieler.hp > 0:
+    speichern()
+
     if any(g.hp > 0 for g in gegner.values()) == False:
         break
     print ("Wähle deinen Gegner")
@@ -82,3 +111,8 @@ while spieler.hp > 0:
         gegner[wahl].angreifen(spieler)
 
 gewinner(spieler, gegner[wahl])
+spieler.hp = spieler.max_hp
+spieler.mana = start_mana
+for name in gegner.values():
+    name.hp = name.max_hp
+speichern()
